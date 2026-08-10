@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JobFinder</title>
+<style>
+    :root{
+        --blue-600:#2563eb; --blue-700:#1d4ed8; --blue-50:#eff6ff; --blue-200:#bfdbfe;
+        --slate-50:#f8fafc; --slate-100:#f1f5f9; --slate-200:#e2e8f0; --slate-300:#cbd5e1;
+        --slate-400:#94a3b8; --slate-500:#64748b; --slate-600:#475569; --slate-700:#334155;
+        --slate-800:#1e293b; --slate-900:#0f172a; --slate-950:#020617;
+        --emerald-50:#ecfdf5; --emerald-600:#059669;
+        --amber-50:#fffbeb; --amber-500:#f59e0b; --amber-600:#d97706;
+        --violet-50:#f5f3ff; --violet-600:#7c3aed;
+        --rose-50:#fff1f2; --rose-500:#f43f5e; --rose-600:#e11d48;
+        --radius:14px;
+    }
+    *{box-sizing:border-box;}
+    body{
+        margin:0; min-height:100vh;
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+        background:var(--slate-50); color:var(--slate-900);
+        transition:background .15s,color .15s;
+    }
+    body.dark{ background:var(--slate-950); color:var(--slate-100); }
+
+    a,button,input,select{ font-family:inherit; }
+    button{ cursor:pointer; }
+
+    /* ---- layout helpers ---- */
+    .center-screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .auth-card{ width:100%; max-width:380px; background:#fff; border:1px solid var(--slate-200); border-radius:16px; box-shadow:0 1px 2px rgba(0,0,0,.04); padding:28px; }
+    .container{ max-width:1152px; margin:0 auto; padding:32px; }
+    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .grid-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+    .grid-5{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+    .flex{ display:flex; }
+    .flex-col{ display:flex; flex-direction:column; }
+    .items-center{ align-items:center; }
+    .justify-between{ display:flex; justify-content:space-between; }
+    .gap-2{ gap:8px; } .gap-3{ gap:12px; } .gap-4{ gap:16px; }
+    .mt-1{ margin-top:4px; } .mt-2{ margin-top:8px; } .mt-3{ margin-top:12px; } .mt-4{ margin-top:16px; } .mt-6{ margin-top:24px; }
+    .mb-1{ margin-bottom:4px; } .mb-2{ margin-bottom:8px; } .mb-3{ margin-bottom:12px; } .mb-4{ margin-bottom:16px; } .mb-5{ margin-bottom:20px; } .mb-6{ margin-bottom:24px; } .mb-7{ margin-bottom:28px; }
+    .w-full{ width:100%; }
+    .text-center{ text-align:center; }
+    .truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .hidden{ display:none !important; }
+
+    /* ---- typography ---- */
+    h1,h2,h3,p{ margin:0; }
+    .title-xl{ font-size:24px; font-weight:700; letter-spacing:-.01em; }
+    .title-lg{ font-size:20px; font-weight:700; letter-spacing:-.01em; }
+    .title-md{ font-size:15px; font-weight:600; }
+    .subtext{ font-size:14px; color:var(--slate-500); }
+    body.dark .subtext{ color:var(--slate-400); }
+    .subtext-sm{ font-size:12px; color:var(--slate-400); }
+    body.dark .subtext-sm{ color:var(--slate-500); }
+
+    /* ---- buttons ---- */
+    .btn{ border-radius:10px; font-weight:600; font-size:15px; padding:12px; border:1px solid transparent; transition:.15s; }
+    .btn-primary{ background:var(--blue-600); color:#fff; }
+    .btn-primary:hover{ background:var(--blue-700); }
+    .btn-primary:disabled{ background:var(--emerald-50); color:var(--emerald-600); cursor:default; }
+    .btn-secondary{ background:transparent; border:1px solid var(--slate-200); color:var(--slate-700); }
+    .btn-secondary:hover{ background:var(--slate-50); }
+    body.dark .btn-secondary{ border-color:var(--slate-700); color:var(--slate-200); }
+    body.dark .btn-secondary:hover{ background:var(--slate-800); }
+    .btn-link{ background:none; border:none; color:var(--blue-600); font-weight:600; font-size:14px; padding:0; }
+    .btn-link:hover{ color:var(--blue-700); }
+    .btn-sm{ font-size:12px; font-weight:600; padding:6px 12px; border-radius:8px; }
+    .icon-btn{ background:none; border:none; padding:8px; border-radius:8px; color:var(--slate-500); }
+    .icon-btn:hover{ background:var(--slate-50); }
+    body.dark .icon-btn{ color:var(--slate-400); }
+    body.dark .icon-btn:hover{ background:var(--slate-800); }
+
+    /* ---- form fields ---- */
+    label.field{ display:block; }
+    .field-label{ font-size:14px; font-weight:500; display:block; margin-bottom:6px; }
+    .field-input, select.field-input{
+        width:100%; border:1px solid var(--slate-200); border-radius:10px; padding:12px 14px;
+        font-size:15px; color:var(--slate-900); background:#fff; outline:none; transition:.15s;
+    }
+    .field-input::placeholder{ color:var(--slate-300); }
+    .field-input:focus{ border-color:var(--slate-900); box-shadow:0 0 0 3px rgba(15,23,42,.05); }
+    .field-input:disabled{ background:var(--slate-50); color:var(--slate-500); }
+    body.dark .field-input{ background:var(--slate-800); border-color:var(--slate-700); color:var(--slate-100); }
+    body.dark .field-input::placeholder{ color:var(--slate-500); }
+    body.dark .field-input:focus{ border-color:var(--slate-500); }
+    body.dark .field-input:disabled{ background:rgba(30,41,59,.5); color:var(--slate-400); }
+
+    .pw-wrap{ position:relative; }
+    .pw-toggle{ position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--slate-400); }
+    .pw-toggle:hover{ color:var(--slate-600); }
+
+    .search-wrap{ position:relative; }
+    .search-wrap svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none; }
+    .search-wrap .field-input{ padding-left:36px; }
+
+    /* ---- segmented tabs ---- */
+    .segmented{ display:grid; grid-template-columns:1fr 1fr; gap:4px; background:var(--slate-100); border-radius:10px; padding:4px; margin-bottom:28px; }
+    body.dark .segmented{ background:var(--slate-800); }
+    .segmented button{ background:transparent; border:none; padding:8px; border-radius:8px; font-size:14px; font-weight:600; color:var(--slate-500); }
+    .segmented button.active{ background:#fff; color:var(--blue-600); box-shadow:0 1px 2px rgba(0,0,0,.06); }
+    body.dark .segmented button{ color:var(--slate-400); }
+    body.dark .segmented button.active{ background:var(--slate-900); }
+    .segmented button:disabled{ cursor:not-allowed; }
+
+    /* ---- cards ---- */
+    .card{ background:#fff; border:1px solid var(--slate-200); border-radius:var(--radius); }
+    body.dark .card{ background:var(--slate-900); border-color:var(--slate-800); }
+    .card-pad{ padding:16px; }
+    .card-pad-lg{ padding:20px; }
+    .clickable{ cursor:pointer; transition:.15s; }
+    .clickable:hover{ border-color:var(--slate-300); box-shadow:0 1px 2px rgba(0,0,0,.04); }
+    body.dark .clickable:hover{ border-color:var(--slate-700); }
+
+    /* ---- avatars ---- */
+    .avatar{ border-radius:999px; display:flex; align-items:center; justify-content:center; font-weight:600; flex-shrink:0; }
+    .avatar.blue{ background:var(--blue-50); color:var(--blue-600); }
+    .avatar.emerald{ background:var(--emerald-50); color:var(--emerald-600); }
+    .avatar.amber{ background:var(--amber-50); color:var(--amber-600); }
+    .avatar.violet{ background:var(--violet-50); color:var(--violet-600); }
+    .avatar.rose{ background:var(--rose-50); color:var(--rose-600); }
+    .avatar.slate{ background:var(--slate-100); color:var(--slate-600); }
+
+    /* ---- badges/pills ---- */
+    .pill{ display:inline-block; font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px; }
+    .pill-blue{ background:var(--blue-50); color:var(--blue-600); }
+    .pill-emerald{ background:var(--emerald-50); color:var(--emerald-600); }
+    .pill-amber{ background:var(--amber-50); color:var(--amber-600); }
+    .pill-rose{ background:var(--rose-50); color:var(--rose-600); }
+    .pill-slate{ background:var(--slate-100); color:var(--slate-500); }
+    .chip{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:4px 10px; border-radius:999px; background:var(--slate-100); color:var(--slate-600); }
+    body.dark .chip{ background:var(--slate-800); color:var(--slate-300); }
+    .chip button{ background:none; border:none; color:inherit; display:flex; }
+    .chip button:hover{ color:var(--rose-500); }
+
+    .rating{ display:flex; align-items:center; gap:4px; font-size:12px; font-weight:600; color:var(--amber-500); }
+
+    /* ---- progress ---- */
+    .progress-track{ height:8px; border-radius:999px; background:var(--slate-100); overflow:hidden; }
+    body.dark .progress-track{ background:var(--slate-800); }
+    .progress-fill{ height:100%; background:var(--blue-600); border-radius:999px; transition:width .2s; }
+
+    /* ---- top nav ---- */
+    .topnav{ position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--slate-200); }
+    body.dark .topnav{ background:var(--slate-900); border-color:var(--slate-800); }
+    .topnav-inner{ max-width:1152px; margin:0 auto; padding:0 32px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+    .brand{ font-size:18px; font-weight:700; color:var(--blue-600); letter-spacing:-.01em; }
+    .navlinks{ display:flex; align-items:center; gap:4px; }
+    .navlink{ position:relative; display:flex; align-items:center; gap:8px; background:none; border:none; padding:8px 12px; border-radius:8px; font-size:14px; font-weight:500; color:var(--slate-500); }
+    .navlink:hover{ background:var(--slate-50); color:var(--slate-800); }
+    body.dark .navlink{ color:var(--slate-400); }
+    body.dark .navlink:hover{ background:var(--slate-800); color:var(--slate-200); }
+    .navlink.active{ background:var(--blue-50); color:var(--blue-600); }
+    .navlink .navbadge{ font-size:10px; font-weight:700; background:var(--blue-600); color:#fff; border-radius:999px; width:16px; height:16px; display:flex; align-items:center; justify-content:center; }
+    .profile-pill{ display:flex; align-items:center; gap:10px; padding:6px 12px 6px 8px; border-radius:999px; border:1px solid transparent; background:none; }
+    .profile-pill:hover{ background:var(--slate-50); }
+    body.dark .profile-pill:hover{ background:var(--slate-800); }
+    .profile-pill.active{ border-color:var(--blue-200); background:var(--blue-50); }
+
+    /* ---- notifications dropdown ---- */
+    .notif-wrap{ position:relative; }
+    .notif-dot{ position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:999px; background:var(--rose-500); }
+    .notif-panel{ position:absolute; right:0; margin-top:8px; width:288px; background:#fff; border:1px solid var(--slate-200); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.12); overflow:hidden; }
+    body.dark .notif-panel{ background:var(--slate-900); border-color:var(--slate-800); }
+    .notif-header{ padding:12px 16px; border-bottom:1px solid var(--slate-200); display:flex; align-items:center; justify-content:space-between; font-size:14px; font-weight:600; }
+    body.dark .notif-header{ border-color:var(--slate-800); }
+    .notif-list{ max-height:280px; overflow-y:auto; }
+    .notif-item{ padding:12px 16px; border-bottom:1px solid var(--slate-100); font-size:14px; }
+    body.dark .notif-item{ border-color:var(--slate-800); }
+    .notif-item:last-child{ border-bottom:none; }
+    .notif-empty{ padding:24px 16px; text-align:center; font-size:14px; color:var(--slate-500); }
+
+    /* ---- empty state ---- */
+    .empty-state{ border:1px dashed var(--slate-200); border-radius:var(--radius); padding:56px 16px; text-align:center; }
+    body.dark .empty-state{ border-color:var(--slate-800); }
+    .empty-icon{ width:44px; height:44px; border-radius:999px; background:var(--slate-100); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:var(--slate-500); }
+    body.dark .empty-icon{ background:var(--slate-800); }
+
+    /* ---- toast ---- */
+    #toast{ position:fixed; bottom:24px; right:24px; z-index:50; background:var(--slate-900); color:#fff; font-size:14px; font-weight:500; padding:12px 16px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.25); display:flex; align-items:center; gap:8px; opacity:0; transform:translateY(8px); transition:.2s; pointer-events:none; }
+    #toast.show{ opacity:1; transform:translateY(0); }
+
+    /* ---- misc ---- */
+    .divider-row{ display:flex; align-items:center; gap:12px; margin:24px 0; }
+    .divider-line{ flex:1; height:1px; background:var(--slate-200); }
+    .bullet-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+    .bullet-list li{ font-size:14px; color:var(--slate-600); display:flex; gap:8px; }
+    body.dark .bullet-list li{ color:var(--slate-400); }
+    .bullet-list li::before{ content:""; width:4px; height:4px; border-radius:999px; background:var(--blue-600); margin-top:7px; flex-shrink:0; }
+    .info-row{ display:flex; gap:12px; border:1px solid var(--slate-200); border-radius:12px; padding:12px; }
+    body.dark .info-row{ border-color:var(--slate-800); }
+    .info-row svg{ color:var(--slate-400); margin-top:2px; flex-shrink:0; }
+    .filter-bar{ padding:16px; margin-bottom:24px; }
+    .subtab-row{ display:flex; gap:4px; border-bottom:1px solid var(--slate-200); margin-bottom:24px; }
+    body.dark .subtab-row{ border-color:var(--slate-800); }
+    .subtab{ padding:10px 16px; font-size:14px; font-weight:500; background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; color:var(--slate-500); }
+    .subtab.active{ border-color:var(--blue-600); color:var(--blue-600); }
+    body.dark .subtab{ color:var(--slate-400); }
+    .upload-box{ width:100%; border:1px dashed var(--slate-200); border-radius:10px; padding:32px; display:flex; flex-direction:column; align-items:center; gap:8px; background:none; }
+    .upload-box:hover{ background:var(--slate-50); }
+    body.dark .upload-box{ border-color:var(--slate-700); }
+    body.dark .upload-box:hover{ background:var(--slate-800); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"></div>
+
+<script>
+/* ============ ICONS (minimal inline SVG set) ============ */
+const ICON = {
+    home:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+    users:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    briefcase:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    grad:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    bookmark:'<svg width="17" height="17" viewBox="0 0 24 24" fill="{FILL}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+    bell:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+    moon:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    sun:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+    eye:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeOff:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',
+    back:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
+    check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    pin:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+    clock:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    case:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    rupee:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 8h12M6 13h3a5 5 0 0 0 0-10M6 13l7 8"/></svg>',
+    target:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    star:'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>',
+    userPlus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg>',
+    message:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+    building:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><line x1="10" y1="6" x2="10" y2="6"/><line x1="14" y1="6" x2="14" y2="6"/><line x1="10" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="14" y2="10"/><line x1="10" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="14" y2="14"/></svg>',
+    save:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+    pencil:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>',
+    upload:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    file:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    image:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+    x:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    trend:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    google:'<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.4 0 10.3-2.1 14-5.5l-6.5-5.4C29.4 34.9 26.8 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.5 5.4C40.9 36.6 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>',
+    linkedin:'<svg width="18" height="18" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#0A66C2"/><path fill="#fff" d="M7.1 9.6H4.4V19h2.7V9.6zM5.8 8.4c.9 0 1.5-.6 1.5-1.4 0-.8-.6-1.4-1.5-1.4s-1.5.6-1.5 1.4c0 .8.6 1.4 1.5 1.4zM19.6 19h-2.7v-5c0-1.2-.4-2-1.5-2-.8 0-1.3.5-1.5 1.1-.1.2-.1.5-.1.7v5.2H11s0-8.5 0-9.4h2.7v1.3c.4-.6 1-1.4 2.5-1.4 1.8 0 3.4 1.2 3.4 3.9V19z"/></svg>',
+};
+function bmk(filled){ return ICON.bookmark.replace('{FILL}', filled ? 'currentColor' : 'none'); }
+
+/* ============ DATA ============ */
+function fmtINR(lakhs){ return '₹' + Math.round(lakhs*100000).toLocaleString('en-IN'); }
+function salaryText(min,max){ return fmtINR(min) + ' – ' + fmtINR(max) + ' / yr'; }
+function esc(str){ return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function initials(name){ return (name||'').split(' ').filter(Boolean).map(p=>p[0]).slice(0,2).join('').toUpperCase(); }
+
+const JOBS = [
+    { id:1, tone:'blue', company:'Nova Labs', title:'Product Designer', location:'Bengaluru', employmentType:'Full-time', workMode:'On-site', experience:'2–4 years', department:'Design', salaryMin:9, salaryMax:14,
+        objective:'Lead the design system and craft the core product experience for our fintech platform.',
+        responsibilities:['Own end-to-end design for key product flows','Build and maintain the design system','Partner closely with engineering and product'],
+        requirements:['3+ years in product design','Strong portfolio in Figma','Experience with design systems'],
+        skillsRequired:['Figma','UI Design','Design Systems','Prototyping'],
+        hr:{name:'Priya Sharma', role:'HR Manager', tone:'rose'}, courseIds:[1,2] },
+    { id:2, tone:'emerald', company:'Brightline', title:'Frontend Engineer', location:'Remote', employmentType:'Full-time', workMode:'Remote', experience:'1–3 years', department:'Engineering', salaryMin:8, salaryMax:12,
+        objective:'Build fast, accessible interfaces in React for a growing health-tech audience.',
+        responsibilities:['Ship React features across the web app','Improve performance and accessibility','Review code and mentor junior engineers'],
+        requirements:['Strong grasp of React and TypeScript','Experience with responsive, accessible UI','Comfortable in a remote-first team'],
+        skillsRequired:['React','TypeScript','CSS','Accessibility'],
+        hr:{name:'Arjun Mehta', role:'Talent Acquisition Manager', tone:'amber'}, courseIds:[3,4] },
+    { id:3, tone:'amber', company:'Orbit Analytics', title:'Data Analyst', location:'Hyderabad', employmentType:'Full-time', workMode:'Hybrid', experience:'0–2 years', department:'Data & Insights', salaryMin:6, salaryMax:9,
+        objective:'Turn raw product data into decisions the whole company can act on.',
+        responsibilities:['Build dashboards for product and growth teams','Write and optimise SQL queries','Present insights to stakeholders'],
+        requirements:['Proficient in SQL and Excel','Familiarity with a BI tool (Looker, Power BI)','Strong communication skills'],
+        skillsRequired:['SQL','Excel','Power BI','Data Visualization'],
+        hr:{name:'Kavya Reddy', role:'HR Manager', tone:'violet'}, courseIds:[5,6] },
+    { id:4, tone:'violet', company:'Kernel & Co', title:'Backend Engineer', location:'Pune', employmentType:'Full-time', workMode:'On-site', experience:'3–6 years', department:'Engineering', salaryMin:12, salaryMax:18,
+        objective:'Own core APIs and infrastructure as we scale past a million users.',
+        responsibilities:['Design and maintain core services','Improve system reliability and scalability','Collaborate with product on new features'],
+        requirements:['Strong backend fundamentals (Node/Java/Go)','Experience with distributed systems','Comfortable owning production systems'],
+        skillsRequired:['Node.js','System Design','Databases','APIs'],
+        hr:{name:'Rohan Iyer', role:'Engineering Manager', tone:'blue'}, courseIds:[4,6] },
+    { id:5, tone:'rose', company:'Fieldnote', title:'Marketing Associate', location:'Mumbai', employmentType:'Part-time', workMode:'Remote', experience:'0–1 years', department:'Marketing', salaryMin:4.5, salaryMax:6,
+        objective:"Help tell the story of a product our early users already love.",
+        responsibilities:['Write and schedule content across channels','Support campaign planning and reporting','Work with design on marketing assets'],
+        requirements:['Strong writing skills','Comfortable with social and email tools','Interest in early-stage startups'],
+        skillsRequired:['Content Writing','Social Media','Email Marketing','Copywriting'],
+        hr:{name:'Sneha Kapoor', role:'HR Business Partner', tone:'emerald'}, courseIds:[1,5] },
+];
+
+const COURSES = [
+    { id:1, tone:'blue', name:'UI/UX Fundamentals', provider:'Design Academy', instructor:'Meera Nair', durationWeeks:6, level:'Beginner', rating:'4.8', price:'₹4,999',
+        description:'A hands-on introduction to user-centred design — from research and wireframes to polished, testable prototypes.',
+        skillsGained:['User research basics','Wireframing & prototyping','Usability testing','Figma fundamentals'] },
+    { id:2, tone:'slate', name:'Design Systems 101', provider:'Design Academy', instructor:'Kabir Malhotra', durationWeeks:4, level:'Intermediate', rating:'4.6', price:'₹3,999',
+        description:'Learn to build and maintain scalable design systems that keep product teams consistent as they grow.',
+        skillsGained:['Component libraries','Design tokens','Documentation','Cross-team collaboration'] },
+    { id:3, tone:'emerald', name:'Advanced React Patterns', provider:'CodeForward', instructor:'Aditya Rao', durationWeeks:8, level:'Intermediate', rating:'4.9', price:'₹6,499',
+        description:'Go beyond the basics with hooks, performance patterns, and architecture used in production React apps.',
+        skillsGained:['Custom hooks','State management','Performance optimisation','Testing React apps'] },
+    { id:4, tone:'violet', name:'System Design Crash Course', provider:'CodeForward', instructor:'Vikram Singh', durationWeeks:5, level:'Advanced', rating:'4.8', price:'₹5,999',
+        description:'Design large-scale, reliable systems — covering load balancing, caching, databases, and trade-offs interviewers look for.',
+        skillsGained:['Scalability patterns','Caching strategies','Database design','API design'] },
+    { id:5, tone:'amber', name:'SQL for Analysts', provider:'DataPath', instructor:'Neha Verma', durationWeeks:4, level:'Beginner', rating:'4.7', price:'₹3,499',
+        description:'Master SQL from first principles to advanced queries used daily by data and business analysts.',
+        skillsGained:['Joins & subqueries','Window functions','Query optimisation','Reporting with SQL'] },
+    { id:6, tone:'rose', name:'Data Storytelling', provider:'DataPath', instructor:'Rhea Fernandes', durationWeeks:3, level:'Beginner', rating:'4.4', price:'₹2,999',
+        description:'Turn raw analysis into narratives stakeholders act on, with practical frameworks for charts and presentations.',
+        skillsGained:['Data visualisation','Presentation design','Narrative structure','Stakeholder communication'] },
+];
+
+const CONNECTIONS = [
+    { id:1, name:'Maya Patel', role:'Product Designer', company:'Nova Labs', tone:'blue' },
+    { id:2, name:'Liam Ortiz', role:'Frontend Engineer', company:'Brightline', tone:'emerald' },
+    { id:3, name:'Ava Kim', role:'Recruiter', company:'Orbit Analytics', tone:'amber' },
+    { id:4, name:'Noah Becker', role:'Backend Engineer', company:'Kernel & Co', tone:'violet' },
+    { id:5, name:'Priya Sharma', role:'HR Manager', company:'Nova Labs', tone:'rose' },
+    { id:6, name:'Rohan Iyer', role:'Engineering Manager', company:'Kernel & Co', tone:'blue' },
+];
+
+function jobById(id){ return JOBS.find(j=>j.id===Number(id)); }
+function courseById(id){ return COURSES.find(c=>c.id===Number(id)); }
+function coursesFor(job){ return job.courseIds.map(courseById).filter(Boolean); }
+function matchPercent(job, skills){
+    if(!skills || skills.length===0) return null;
+    const lower = skills.map(s=>s.toLowerCase());
+    const hits = job.skillsRequired.filter(s=>lower.includes(s.toLowerCase())).length;
+    return Math.round((hits/job.skillsRequired.length)*100);
+}
+
+const JOB_LOCATIONS = ['All locations', ...new Set(JOBS.map(j=>j.location))];
+const JOB_EXPERIENCE = ['All experience', ...new Set(JOBS.map(j=>j.experience))];
+const JOB_TYPES = ['All types', ...new Set(JOBS.map(j=>j.employmentType))];
+const JOB_DEPARTMENTS = ['All departments', ...new Set(JOBS.map(j=>j.department))];
+const SALARY_BUCKETS = ['Any salary','Under ₹6L','₹6L – ₹10L','₹10L – ₹15L','₹15L+'];
+function inSalaryBucket(job,b){
+    if(b==='Any salary') return true;
+    if(b==='Under ₹6L') return job.salaryMin<6;
+    if(b==='₹6L – ₹10L') return job.salaryMax>=6 && job.salaryMin<=10;
+    if(b==='₹10L – ₹15L') return job.salaryMax>=10 && job.salaryMin<=15;
+    if(b==='₹15L+') return job.salaryMax>=15;
+    return true;
+}
+const COURSE_LEVELS = ['All levels','Beginner','Intermediate','Advanced'];
+const COURSE_DURATIONS = ['Any duration','Under 4 weeks','4–6 weeks','6+ weeks'];
+const COURSE_PROVIDERS = ['All providers', ...new Set(COURSES.map(c=>c.provider))];
+function inDurationBucket(c,b){
+    if(b==='Any duration') return true;
+    if(b==='Under 4 weeks') return c.durationWeeks<4;
+    if(b==='4–6 weeks') return c.durationWeeks>=4 && c.durationWeeks<=6;
+    if(b==='6+ weeks') return c.durationWeeks>6;
+    return true;
+}
+function filterJobs(f){
+    const q=(f.query||'').trim().toLowerCase();
+    return JOBS.filter(j=>{
+        const mq = !q || j.title.toLowerCase().includes(q) || j.company.toLowerCase().includes(q) || j.department.toLowerCase().includes(q);
+        return mq &&
+            (f.location===JOB_LOCATIONS[0] || j.location===f.location) &&
+            (f.experience===JOB_EXPERIENCE[0] || j.experience===f.experience) &&
+            (f.type===JOB_TYPES[0] || j.employmentType===f.type) &&
+            (f.department===JOB_DEPARTMENTS[0] || j.department===f.department) &&
+            inSalaryBucket(j, f.salary);
+    });
+}
+function filterCourses(f){
+    const q=(f.query||'').trim().toLowerCase();
+    return COURSES.filter(c=>{
+        const mq = !q || c.name.toLowerCase().includes(q) || c.provider.toLowerCase().includes(q);
+        return mq &&
+            (f.level===COURSE_LEVELS[0] || c.level===f.level) &&
+            (f.provider===COURSE_PROVIDERS[0] || c.provider===f.provider) &&
+            inDurationBucket(c, f.duration);
+    });
+}
+function makeJobFilters(){ return {query:'',location:JOB_LOCATIONS[0],experience:JOB_EXPERIENCE[0],type:JOB_TYPES[0],department:JOB_DEPARTMENTS[0],salary:SALARY_BUCKETS[0]}; }
+function makeCourseFilters(){ return {query:'',level:COURSE_LEVELS[0],duration:COURSE_DURATIONS[0],provider:COURSE_PROVIDERS[0]}; }
+
+const STATUS_OPTIONS = ['Applied','Interviewing','Offer','Rejected'];
+const STATUS_PILL = { Applied:'pill-blue', Interviewing:'pill-amber', Offer:'pill-emerald', Rejected:'pill-rose' };
+
+/* ============ STATE ============ */
+const state = {
+    screen:'auth', authMode:'login', detailsStep:1,
+    activeTab:'home', selectedJobId:null, selectedCourseId:null, profileOpen:false, dark:false,
+    login:{email:'',password:''},
+    signup:{name:'',email:'',phone:'',password:'',confirm:''},
+    pwVisible:{login:false, signup:false, signupConfirm:false},
+    details:{fullName:'',phone:'',email:'',linkedin:'',address:'',sscMarks:'',hscMarks:'',degree:'',qualification:'',specialization:''},
+    bookmarkedJobs:new Set(), bookmarkedCourses:new Set(),
+    appliedJobs:{}, courseProgress:{},
+    skills:[], resume:null,
+    notifications:[], unread:0,
+    profileEditing:false,
+    jobTabFilters:makeJobFilters(), courseTabFilters:makeCourseFilters(),
+    searchMode:'job', searchJobFilters:makeJobFilters(), searchCourseFilters:makeCourseFilters(),
+    savedSub:'jobs', notifOpen:false,
+};
+
+/* ============ TOAST / NOTIFY ============ */
+let toastTimer=null;
+function showToast(msg){
+    const el = document.getElementById('toast');
+    el.innerHTML = ICON.check + '<span>' + esc(msg) + '</span>';
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>el.classList.remove('show'), 3000);
+}
+function notify(msg){
+    showToast(msg);
+    state.notifications.unshift({id:Date.now(), message:msg, time:'Just now'});
+    state.notifications = state.notifications.slice(0,20);
+    state.unread++;
+}
+
+/* ============ RENDER ROOT ============ */
+function render(){
+    document.body.className = state.dark ? 'dark' : '';
+    const root = document.getElementById('app');
+    if(state.screen !== 'app'){
+        root.innerHTML = renderAuthFlow();
+        attachAuthFlowEvents();
+    } else {
+        root.innerHTML = renderAppShell();
+        attachAppShellEvents();
+    }
+}
+
+/* ============ AUTH / DETAILS / DONE ============ */
+function renderAuthFlow(){
+    let inner = '';
+    if(state.screen==='auth') inner = renderAuthScreen();
+    else if(state.screen==='details') inner = renderDetailsScreen();
+    else if(state.screen==='done') inner = renderDoneScreen();
+    return '<div class="center-screen"><div class="auth-card">' + inner + '</div></div>';
+}
+
+function renderAuthScreen(){
+    const isLogin = state.authMode==='login';
+    return `
+        <div class="segmented">
+            <button class="${isLogin?'active':''}" onclick="setAuthMode('login')">Login</button>
+            <button class="${!isLogin?'active':''}" onclick="setAuthMode('signup')">Sign Up</button>
+        </div>
+        <div class="text-center mb-7">
+            <h1 class="title-xl">${isLogin?'Welcome Back':'Create Account'}</h1>
+            <p class="subtext mt-2">${isLogin?'Login to your account':'Sign up to get started'}</p>
+        </div>
+        ${isLogin ? renderLoginForm() : renderSignupForm()}
+        <div class="divider-row"><div class="divider-line"></div><span class="subtext-sm">or</span><div class="divider-line"></div></div>
+        <div class="flex-col gap-3">
+            <button class="btn btn-secondary flex items-center justify-content-center gap-2" style="display:flex;justify-content:center;">${ICON.google}&nbsp;Continue with Google</button>
+            <button class="btn btn-secondary" style="display:flex;justify-content:center;gap:8px;align-items:center;margin-top:12px;">${ICON.linkedin}&nbsp;Continue with LinkedIn</button>
+        </div>
+        <p class="text-center subtext mt-6">
+            ${isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button class="btn-link" onclick="setAuthMode('${isLogin?'signup':'login'}')">${isLogin?'Sign up':'Login'}</button>
+        </p>
+    `;
+}
+
+function renderLoginForm(){
+    return `
+        <div class="flex-col gap-4">
+            <label class="field"><span class="field-label">Email</span>
+                <input class="field-input" type="email" placeholder="Enter your email" id="loginEmail" value="${esc(state.login.email)}" />
+            </label>
+            <div>
+                <div class="justify-between items-center"><span class="field-label" style="margin-bottom:0;">Password</span><button class="btn-link" style="font-size:14px;">Forgot password?</button></div>
+                <div class="pw-wrap mt-2">
+                    <input class="field-input" type="password" placeholder="Enter your password" id="loginPassword" value="${esc(state.login.password)}" />
+                    <button class="pw-toggle" data-pw="login">${ICON.eye}</button>
+                </div>
+            </div>
+            <button class="btn btn-primary w-full" onclick="handleAuthSubmit()">Login</button>
+        </div>
+    `;
+}
+function renderSignupForm(){
+    return `
+        <div class="flex-col gap-4">
+            <label class="field"><span class="field-label">Full Name</span><input class="field-input" placeholder="Enter your full name" id="signupName" value="${esc(state.signup.name)}" /></label>
+            <label class="field"><span class="field-label">Email</span><input class="field-input" type="email" placeholder="Enter your email" id="signupEmail" value="${esc(state.signup.email)}" /></label>
+            <label class="field"><span class="field-label">Phone Number</span><input class="field-input" type="tel" placeholder="Enter your phone number" id="signupPhone" value="${esc(state.signup.phone)}" /></label>
+            <label class="field"><span class="field-label">Password</span>
+                <div class="pw-wrap"><input class="field-input" type="password" placeholder="Create a password" id="signupPassword" value="${esc(state.signup.password)}" /><button class="pw-toggle" data-pw="signup">${ICON.eye}</button></div>
+            </label>
+            <label class="field"><span class="field-label">Confirm Password</span>
+                <div class="pw-wrap"><input class="field-input" type="password" placeholder="Confirm your password" id="signupConfirm" value="${esc(state.signup.confirm)}" /><button class="pw-toggle" data-pw="signupConfirm">${ICON.eye}</button></div>
+            </label>
+            <button class="btn btn-primary w-full" onclick="handleAuthSubmit()">Sign Up</button>
+        </div>
+    `;
+}
+
+function renderDetailsScreen(){
+    const step1 = state.detailsStep===1;
+    return `
+        <button class="btn-link mb-5" style="display:flex;align-items:center;gap:6px;color:var(--slate-500);" onclick="goScreen('auth')">${ICON.back}Back</button>
+        <div class="segmented">
+            <button class="${step1?'active':''}" onclick="goDetailsStep(1)">Personal</button>
+            <button class="${!step1?'active':''}" ${step1?'disabled':''} onclick="goDetailsStep(2)">Qualification</button>
+        </div>
+        <div class="text-center mb-7">
+            <h1 class="title-xl">${step1?'Personal Details':'Qualification Details'}</h1>
+            <p class="subtext mt-2">${step1?'Tell us a bit about yourself':'Add your education background'}</p>
+        </div>
+        ${step1 ? `
+            <div class="flex-col gap-4">
+                ${field('Full Name','d_fullName',state.details.fullName,'Enter your full name')}
+                ${field('Phone Number','d_phone',state.details.phone,'Enter your phone number','tel')}
+                ${field('Email','d_email',state.details.email,'Enter your email','email')}
+                ${field('LinkedIn','d_linkedin',state.details.linkedin,'linkedin.com/in/yourname')}
+                ${field('Address','d_address',state.details.address,'Enter your city, state')}
+                <button class="btn btn-primary w-full" onclick="nextDetailsStep()">Continue</button>
+            </div>` : `
+            <div class="flex-col gap-4">
+                ${field('SSC Marks','d_sscMarks',state.details.sscMarks,'e.g. 92%')}
+                ${field('HSC Marks','d_hscMarks',state.details.hscMarks,'e.g. 88%')}
+                ${field('Degree','d_degree',state.details.degree,'e.g. B.Tech')}
+                ${field('Qualification','d_qualification',state.details.qualification,'e.g. Computer Science')}
+                ${field('Specification','d_specialization',state.details.specialization,'e.g. Data Engineering')}
+                <button class="btn btn-primary w-full" onclick="submitDetails()">Submit</button>
+            </div>
+            <p class="text-center subtext mt-6">Need to fix something? <button class="btn-link" onclick="goDetailsStep(1)">Back to Personal</button></p>
+        `}
+    `;
+}
+function field(label,id,value,placeholder,type){
+    return `<label class="field"><span class="field-label">${label}</span><input class="field-input" data-bind="${id}" type="${type||'text'}" placeholder="${placeholder||''}" value="${esc(value)}" /></label>`;
+}
+
+function renderDoneScreen(){
+    return `
+        <div style="padding:16px 0;text-align:center;">
+            <div style="width:48px;height:48px;border-radius:999px;background:var(--emerald-50);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--emerald-600);">${ICON.check}</div>
+            <h1 class="title-xl mb-2">All Set</h1>
+            <p class="subtext mb-6">Thanks, ${esc(state.details.fullName || 'there')} — your account and details are complete.</p>
+            <button class="btn btn-primary w-full" onclick="enterApp()">Continue</button>
+        </div>
+    `;
+}
+
+function attachAuthFlowEvents(){
+    document.querySelectorAll('[data-bind]').forEach(el=>{
+        el.addEventListener('input', e=>{
+            const key = el.getAttribute('data-bind').replace('d_','');
+            state.details[key] = e.target.value;
+        });
+    });
+    const le = document.getElementById('loginEmail'); if(le) le.addEventListener('input', e=>state.login.email=e.target.value);
+    const lp = document.getElementById('loginPassword'); if(lp) lp.addEventListener('input', e=>state.login.password=e.target.value);
+    const sn = document.getElementById('signupName'); if(sn) sn.addEventListener('input', e=>state.signup.name=e.target.value);
+    const se = document.getElementById('signupEmail'); if(se) se.addEventListener('input', e=>state.signup.email=e.target.value);
+    const sph = document.getElementById('signupPhone'); if(sph) sph.addEventListener('input', e=>state.signup.phone=e.target.value);
+    const sp = document.getElementById('signupPassword'); if(sp) sp.addEventListener('input', e=>state.signup.password=e.target.value);
+    const sc = document.getElementById('signupConfirm'); if(sc) sc.addEventListener('input', e=>state.signup.confirm=e.target.value);
+
+    document.querySelectorAll('.pw-toggle').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            const key = btn.getAttribute('data-pw');
+            const inputId = key==='login'?'loginPassword':key==='signup'?'signupPassword':'signupConfirm';
+            const input = document.getElementById(inputId);
+            const showing = input.type==='text';
+            input.type = showing ? 'password' : 'text';
+            btn.innerHTML = showing ? ICON.eye : ICON.eyeOff;
+        });
+    });
+}
+
+function setAuthMode(m){ state.authMode=m; render(); }
+function goScreen(s){ state.screen=s; render(); }
+function goDetailsStep(n){ if(n===1 || state.detailsStep===2){ state.detailsStep=n; render(); } }
+function nextDetailsStep(){ state.detailsStep=2; render(); }
+function handleAuthSubmit(){
+    const isLogin = state.authMode==='login';
+    state.details.fullName = state.details.fullName || state.signup.name || '';
+    state.details.email = state.details.email || (isLogin ? state.login.email : state.signup.email);
+    state.details.phone = state.details.phone || state.signup.phone;
+    state.detailsStep = 1;
+    state.screen = 'details';
+    render();
+}
+function submitDetails(){ state.screen='done'; render(); }
+function enterApp(){ state.activeTab='home'; state.selectedJobId=null; state.profileOpen=false; state.screen='app'; render(); }
+
+/* ============ APP SHELL ============ */
+function renderAppShell(){
+    return renderTopNav() + '<div id="mainContent">' + renderMainContent() + '</div>';
+}
+
+function renderTopNav(){
+    const savedCount = state.bookmarkedJobs.size + state.bookmarkedCourses.size;
+    const items = [
+        {key:'home', label:'Home', icon:ICON.home},
+        {key:'network', label:'Network', icon:ICON.users},
+        {key:'job', label:'Job', icon:ICON.briefcase},
+        {key:'course', label:'Course', icon:ICON.grad},
+        {key:'search', label:'Search', icon:ICON.search},
+        {key:'saved', label:'Saved', icon:ICON.bookmark.replace('{FILL}','none'), badge:savedCount},
+    ];
+    const navHtml = items.map(it=>{
+        const active = !state.profileOpen && state.activeTab===it.key;
+        return `<button class="navlink ${active?'active':''}" onclick="changeTab('${it.key}')">${it.icon}<span>${it.label}</span>${it.badge?`<span class="navbadge">${it.badge}</span>`:''}</button>`;
+    }).join('');
+
+    return `
+    <div class="topnav">
+        <div class="topnav-inner">
+            <div class="flex items-center gap-4" style="gap:32px;">
+                <span class="brand">JobFinder</span>
+                <div class="navlinks">${navHtml}</div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="icon-btn" onclick="toggleDark()">${state.dark ? ICON.sun : ICON.moon}</button>
+                <div class="notif-wrap">
+                    <button class="icon-btn" style="position:relative;" onclick="toggleNotif()">${ICON.bell}${state.unread>0?'<span class="notif-dot"></span>':''}</button>
+                    <div id="notifPanel" class="notif-panel ${state.notifOpen?'':'hidden'}">
+                        <div class="notif-header"><span>Notifications</span><button class="icon-btn" style="padding:2px;" onclick="toggleNotif()">${ICON.x}</button></div>
+                        <div class="notif-list">${renderNotifList()}</div>
+                    </div>
+                </div>
+                <button class="profile-pill ${state.profileOpen?'active':''}" onclick="openProfile()">
+                    <div class="avatar blue" style="width:32px;height:32px;font-size:12px;">${initials(state.details.fullName||'You')}</div>
+                    <span style="font-size:14px;font-weight:500;">${esc((state.details.fullName||'Your profile').split(' ')[0])}</span>
+                </button>
+            </div>
+        </div>
+    </div>`;
+}
+function renderNotifList(){
+    if(state.notifications.length===0) return '<div class="notif-empty">No notifications yet</div>';
+    return state.notifications.map(n=>`<div class="notif-item"><div>${esc(n.message)}</div><div class="subtext-sm mt-1">${n.time}</div></div>`).join('');
+}
+
+function renderMainContent(){
+    if(state.profileOpen) return renderProfileTab();
+    if(state.selectedJobId) return renderJobDetail(jobById(state.selectedJobId));
+    if(state.selectedCourseId) return renderCourseDetail(courseById(state.selectedCourseId));
+    if(state.activeTab==='home') return renderHomeTab();
+    if(state.activeTab==='network') return renderNetworkTab();
+    if(state.activeTab==='job') return renderJobTab();
+    if(state.activeTab==='course') return renderCourseTab();
+    if(state.activeTab==='search') return renderSearchTab();
+    if(state.activeTab==='saved') return renderSavedTab();
+    return '';
+}
+
+function attachAppShellEvents(){
+    attachJobGridEvents();
+    attachCourseGridEvents();
+    attachSearchInputEvents();
+    if(state.profileOpen) attachProfileEvents();
+}
+
+function changeTab(tab){ state.selectedJobId=null; state.selectedCourseId=null; state.profileOpen=false; state.notifOpen=false; state.activeTab=tab; render(); }
+function openProfile(){ state.selectedJobId=null; state.selectedCourseId=null; state.profileOpen=true; state.notifOpen=false; render(); }
+function toggleDark(){ state.dark=!state.dark; render(); }
+function toggleNotif(){ state.notifOpen=!state.notifOpen; state.unread=0; document.getElementById('notifPanel').classList.toggle('hidden', !state.notifOpen); document.getElementById('notifPanel').innerHTML = renderNotifList()==='' ? '' : document.getElementById('notifPanel').innerHTML; render(); }
+
+/* ============ CARDS ============ */
+function jobCardHtml(job, opts){
+    opts = opts || {};
+    const bookmarked = state.bookmarkedJobs.has(job.id);
+    const status = state.appliedJobs[job.id];
+    const match = matchPercent(job, state.skills);
+    const matchHtml = (match!==null) ? `<span class="pill ${match>=60?'pill-emerald':match>=30?'pill-amber':'pill-slate'}" style="display:inline-block;margin-bottom:8px;">${match}% skill match</span>` : '';
+    const statusHtml = status ? `<span class="pill ${STATUS_PILL[status]}" style="display:inline-block;margin-top:12px;">${status}</span>` : '';
+    return `
+    <div class="card clickable card-pad" style="position:relative;" onclick="openJob(${job.id})">
+        <button class="icon-btn" style="position:absolute;top:10px;right:10px;color:${bookmarked?'var(--blue-600)':'var(--slate-300)'};" onclick="event.stopPropagation();toggleBookmarkJob(${job.id})">${bmk(bookmarked)}</button>
+        <div class="flex items-center gap-3 mb-3" style="padding-right:24px;">
+            <div class="avatar ${job.tone}" style="width:42px;height:42px;font-size:15px;">${initials(job.company)}</div>
+            <div style="min-width:0;">
+                <p class="title-md truncate">${esc(job.title)}</p>
+                <p class="subtext truncate" style="font-size:12px;">${esc(job.company)}</p>
+            </div>
+        </div>
+        ${matchHtml}
+        <div class="grid-2" style="row-gap:6px;font-size:12px;color:var(--slate-500);">
+            <span class="flex items-center gap-2">${ICON.pin}${esc(job.location)}</span>
+            <span class="flex items-center gap-2">${ICON.clock}${esc(job.employmentType)}</span>
+            <span class="flex items-center gap-2">${ICON.case}${esc(job.experience)}</span>
+            <span class="flex items-center gap-2" style="font-weight:600;color:inherit;">${ICON.rupee}${salaryText(job.salaryMin,job.salaryMax)}</span>
+        </div>
+        ${statusHtml}
+    </div>`;
+}
+
+function courseCardHtml(course){
+    const bookmarked = state.bookmarkedCourses.has(course.id);
+    const progress = state.courseProgress[course.id];
+    const enrolled = progress !== undefined;
+    const bottom = enrolled ? `
+        <div class="flex justify-between" style="font-size:12px;"><span class="subtext">Progress</span><span style="font-weight:600;">${progress}%</span></div>
+        <div class="progress-track mt-2"><div class="progress-fill" style="width:${progress}%;"></div></div>
+        <button class="btn-sm btn-secondary w-full mt-3" style="border-color:var(--blue-200);color:var(--blue-600);" ${progress>=100?'disabled':''} onclick="event.stopPropagation();bumpCourse(${course.id},10)">${progress>=100?'Completed':'+10% progress'}</button>
+    ` : `
+        <div class="justify-between items-center" style="padding-top:12px;border-top:1px solid var(--slate-100);">
+            <span style="font-size:14px;font-weight:600;">${course.price}</span>
+            <button class="btn-sm btn-primary" onclick="event.stopPropagation();enrollCourse(${course.id})">Enroll</button>
+        </div>`;
+    return `
+    <div class="card clickable card-pad" style="position:relative;" onclick="openCourse(${course.id})">
+        <button class="icon-btn" style="position:absolute;top:10px;right:10px;color:${bookmarked?'var(--blue-600)':'var(--slate-300)'};" onclick="event.stopPropagation();toggleBookmarkCourse(${course.id})">${bmk(bookmarked)}</button>
+        <div class="flex items-center gap-3 mb-3" style="padding-right:24px;">
+            <div class="avatar ${course.tone}" style="width:42px;height:42px;font-size:15px;">${initials(course.name)}</div>
+            <div style="min-width:0;"><p class="title-md truncate">${esc(course.name)}</p><p class="subtext truncate" style="font-size:12px;">${esc(course.provider)}</p></div>
+        </div>
+        <p class="subtext mb-3" style="font-size:12px;">Instructor: ${esc(course.instructor)}</p>
+        <div class="justify-between mb-3" style="font-size:12px;color:var(--slate-500);">
+            <span>${course.durationWeeks} weeks · ${course.level}</span>
+            <span class="rating">${ICON.star}${course.rating}</span>
+        </div>
+        ${bottom}
+    </div>`;
+}
+
+/* ============ HOME ============ */
+function renderHomeTab(){
+    return `<div class="container">
+        <div class="grid-3 mb-6" style="margin-bottom:40px;">
+            <div class="card card-pad-lg"><p style="font-size:30px;font-weight:700;">${JOBS.length}</p><p class="subtext mt-1">New job matches</p></div>
+            <div class="card card-pad-lg"><p style="font-size:30px;font-weight:700;">${CONNECTIONS.length}</p><p class="subtext mt-1">Suggested connections</p></div>
+            <div class="card card-pad-lg"><p style="font-size:30px;font-weight:700;">${COURSES.length}</p><p class="subtext mt-1">Recommended courses</p></div>
+        </div>
+        <div class="mb-5" style="margin-bottom:40px;">
+            <div class="mb-5"><h2 class="title-lg">Top matches for you</h2></div>
+            <div class="grid-3">${JOBS.slice(0,3).map(j=>jobCardHtml(j)).join('')}</div>
+        </div>
+        <div>
+            <div class="mb-5"><h2 class="title-lg">Recommended courses</h2><p class="subtext mt-1">Picked to match the roles you're eyeing.</p></div>
+            <div class="grid-3">${COURSES.slice(0,3).map(c=>courseCardHtml(c)).join('')}</div>
+        </div>
+    </div>`;
+}
+
+/* ============ NETWORK ============ */
+function renderNetworkTab(){
+    return `<div class="container">
+        <div class="mb-5"><h2 class="title-lg">Network</h2><p class="subtext mt-1">People you may know in your field.</p></div>
+        <div class="grid-3">
+            ${CONNECTIONS.map(c=>`
+                <div class="card card-pad flex items-center gap-3">
+                    <div class="avatar ${c.tone}" style="width:48px;height:48px;">${initials(c.name)}</div>
+                    <div style="min-width:0;flex:1;"><p class="title-md truncate">${esc(c.name)}</p><p class="subtext truncate" style="font-size:12px;">${esc(c.role)} · ${esc(c.company)}</p></div>
+                    <button class="btn-sm" style="border:1px solid var(--blue-200);color:var(--blue-600);background:none;display:flex;align-items:center;gap:4px;">${ICON.userPlus}Connect</button>
+                </div>`).join('')}
+        </div>
+    </div>`;
+}
+
+/* ============ JOB TAB ============ */
+function filterBarHtml(f, kind, prefix){
+    if(kind==='job'){
+        return `
+        <div class="card filter-bar">
+            <div class="search-wrap mb-3">${ICON.search}<input class="field-input" id="${prefix}Query" placeholder="Search job title, company or department" value="${esc(f.query)}" /></div>
+            <div class="grid-5">
+                ${selectHtml('Location', prefix+'Location', JOB_LOCATIONS, f.location)}
+                ${selectHtml('Experience', prefix+'Experience', JOB_EXPERIENCE, f.experience)}
+                ${selectHtml('Type', prefix+'Type', JOB_TYPES, f.type)}
+                ${selectHtml('Department', prefix+'Department', JOB_DEPARTMENTS, f.department)}
+                ${selectHtml('Salary', prefix+'Salary', SALARY_BUCKETS, f.salary)}
+            </div>
+        </div>`;
+    } else {
+        return `
+        <div class="card filter-bar">
+            <div class="search-wrap mb-3">${ICON.search}<input class="field-input" id="${prefix}Query" placeholder="Search courses or providers" value="${esc(f.query)}" /></div>
+            <div class="grid-3" style="gap:12px;">
+                ${selectHtml('Level', prefix+'Level', COURSE_LEVELS, f.level)}
+                ${selectHtml('Duration', prefix+'Duration', COURSE_DURATIONS, f.duration)}
+                ${selectHtml('Provider', prefix+'Provider', COURSE_PROVIDERS, f.provider)}
+            </div>
+        </div>`;
+    }
+}
+function selectHtml(label, id, options, current){
+    return `<label class="flex-col" style="gap:4px;"><span class="subtext-sm">${label}</span>
+        <select class="field-input" id="${id}" style="padding:8px 10px;font-size:13px;">
+            ${options.map(o=>`<option value="${esc(o)}" ${o===current?'selected':''}>${esc(o)}</option>`).join('')}
+        </select></label>`;
+}
+
+function renderJobTab(){
+    return `<div class="container">
+        <div class="mb-5"><h2 class="title-lg">Jobs for you</h2><p class="subtext mt-1">Based on your profile and qualifications.</p></div>
+        ${filterBarHtml(state.jobTabFilters,'job','jobTab')}
+        <div id="jobTabGrid">${renderJobGrid(state.jobTabFilters)}</div>
+    </div>`;
+}
+function renderJobGrid(f){
+    const results = filterJobs(f);
+    if(results.length===0) return emptyStateHtml(ICON.briefcase,'No jobs match your filters','Try widening your search.');
+    return '<div class="grid-2">' + results.map(j=>jobCardHtml(j)).join('') + '</div>';
+}
+function emptyStateHtml(icon,title,subtitle){
+    return `<div class="empty-state"><div class="empty-icon">${icon}</div><p class="title-md">${title}</p><p class="subtext-sm mt-1">${subtitle}</p></div>`;
+}
+
+function attachJobGridEvents(){
+    bindFilterGroup('jobTab', state.jobTabFilters, 'job', 'jobTabGrid');
+    bindFilterGroup('searchJob', state.searchJobFilters, 'job', 'searchGrid');
+}
+function attachCourseGridEvents(){
+    bindFilterGroup('courseTab', state.courseTabFilters, 'course', 'courseTabGrid');
+    bindFilterGroup('searchCourse', state.searchCourseFilters, 'course', 'searchGrid');
+}
+function attachSearchInputEvents(){ /* handled via bindFilterGroup calls above when relevant tab renders */ }
+
+function bindFilterGroup(prefix, filtersObj, kind, gridId){
+    const gridEl = document.getElementById(gridId);
+    if(!gridEl) return;
+    const qEl = document.getElementById(prefix+'Query');
+    if(qEl) qEl.addEventListener('input', e=>{ filtersObj.query = e.target.value; refreshGrid(); });
+    const fieldsJob = ['Location','Experience','Type','Department','Salary'];
+    const fieldsCourse = ['Level','Duration','Provider'];
+    const fields = kind==='job' ? fieldsJob : fieldsCourse;
+    fields.forEach(fname=>{
+        const el = document.getElementById(prefix+fname);
+        if(el) el.addEventListener('change', e=>{ filtersObj[fname.toLowerCase()] = e.target.value; refreshGrid(); });
+    });
+    function refreshGrid(){
+        const el = document.getElementById(gridId);
+        if(!el) return;
+        el.innerHTML = kind==='job' ? renderJobGrid(filtersObj) : renderCourseGrid(filtersObj);
+    }
+}
+
+/* ============ JOB DETAIL ============ */
+function renderJobDetail(job){
+    const bookmarked = state.bookmarkedJobs.has(job.id);
+    const status = state.appliedJobs[job.id];
+    const jobCourses = coursesFor(job);
+    return `<div class="container">
+        <button class="btn-link mb-6" style="display:flex;align-items:center;gap:6px;color:var(--slate-500);" onclick="closeJob()">${ICON.back}Back to jobs</button>
+        <div class="grid-2" style="grid-template-columns:2fr 1fr;gap:32px;align-items:start;">
+            <div class="flex-col gap-4">
+                <div class="justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <div class="avatar ${job.tone}" style="width:56px;height:56px;font-size:20px;">${initials(job.company)}</div>
+                        <div><h1 class="title-lg">${esc(job.title)}</h1><p class="subtext flex items-center gap-2 mt-1">${ICON.building}${esc(job.company)} · ${esc(job.department)}</p></div>
+                    </div>
+                    <button class="icon-btn" style="border:1px solid ${bookmarked?'var(--blue-200)':'var(--slate-200)'};background:${bookmarked?'var(--blue-50)':'none'};color:${bookmarked?'var(--blue-600)':'var(--slate-500)'};" onclick="toggleBookmarkJob(${job.id})">${bmk(bookmarked)}</button>
+                </div>
+
+                <div class="grid-2">
+                    <div class="info-row">${ICON.pin}<div><p class="subtext-sm">Location</p><p style="font-size:14px;margin-top:2px;">${esc(job.location)}</p></div></div>
+                    <div class="info-row">${ICON.clock}<div><p class="subtext-sm">Employment type</p><p style="font-size:14px;margin-top:2px;">${esc(job.employmentType)} · ${esc(job.workMode)}</p></div></div>
+                    <div class="info-row">${ICON.case}<div><p class="subtext-sm">Experience</p><p style="font-size:14px;margin-top:2px;">${esc(job.experience)}</p></div></div>
+                    <div class="info-row">${ICON.rupee}<div><p class="subtext-sm">Salary</p><p style="font-size:14px;margin-top:2px;">${salaryText(job.salaryMin,job.salaryMax)}</p></div></div>
+                </div>
+
+                <div class="card card-pad">
+                    <p class="subtext-sm flex items-center gap-2 mb-2">${ICON.target}Objective</p>
+                    <p style="font-size:14px;line-height:1.6;">${esc(job.objective)}</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card card-pad"><p class="title-md mb-3">Responsibilities</p><ul class="bullet-list">${job.responsibilities.map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div>
+                    <div class="card card-pad"><p class="title-md mb-3">Requirements</p><ul class="bullet-list">${job.requirements.map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div>
+                </div>
+
+                <div class="card card-pad">
+                    <p class="title-md mb-3">Skills required</p>
+                    <div class="flex gap-2" style="flex-wrap:wrap;">${job.skillsRequired.map(s=>`<span class="chip">${esc(s)}</span>`).join('')}</div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button class="btn btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;">${ICON.message}Message HR</button>
+                    <button class="btn btn-primary" style="flex:1;" ${status?'disabled':''} onclick="applyToJob(${job.id})">${status?`Applied · ${status}`:'Apply'}</button>
+                </div>
+            </div>
+
+            <div class="flex-col gap-5">
+                <div class="card card-pad">
+                    <p class="subtext-sm mb-3">Hiring manager</p>
+                    <div class="flex items-center gap-3"><div class="avatar ${job.hr.tone}" style="width:44px;height:44px;">${initials(job.hr.name)}</div><div><p class="title-md">${esc(job.hr.name)}</p><p class="subtext" style="font-size:12px;">${esc(job.hr.role)}</p></div></div>
+                </div>
+                <div class="card card-pad">
+                    <p class="subtext-sm mb-3">Course recommendations</p>
+                    <div class="flex-col gap-3">
+                        ${jobCourses.map(c=>`
+                            <div class="flex items-center gap-3 clickable" onclick="openCourse(${c.id})">
+                                <div class="avatar ${c.tone}" style="width:36px;height:36px;font-size:13px;">${initials(c.name)}</div>
+                                <div style="min-width:0;flex:1;"><p style="font-size:14px;font-weight:500;" class="truncate">${esc(c.name)}</p><p class="subtext-sm truncate">${c.durationWeeks} weeks · ${c.level}</p></div>
+                                <span class="rating">${ICON.star}${c.rating}</span>
+                            </div>`).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function openJob(id){ state.selectedJobId=id; state.selectedCourseId=null; render(); }
+function closeJob(){ state.selectedJobId=null; render(); }
+function openCourse(id){ state.selectedCourseId=id; state.selectedJobId=null; render(); }
+function closeCourseDetail(){ state.selectedCourseId=null; render(); }
+function toggleBookmarkJob(id){
+    const job = jobById(id);
+    if(state.bookmarkedJobs.has(id)){ state.bookmarkedJobs.delete(id); }
+    else { state.bookmarkedJobs.add(id); notify(`Saved ${job.title} at ${job.company}`); }
+    render();
+}
+function applyToJob(id){
+    if(state.appliedJobs[id]) return;
+    const job = jobById(id);
+    state.appliedJobs[id] = 'Applied';
+    notify(`Applied to ${job.title} at ${job.company}`);
+    render();
+}
+function updateJobStatus(id, status){
+    const job = jobById(id);
+    state.appliedJobs[id] = status;
+    notify(`${job.title} status updated to ${status}`);
+    render();
+}
+
+/* ============ COURSE DETAIL ============ */
+function renderCourseDetail(course){
+    const bookmarked = state.bookmarkedCourses.has(course.id);
+    const progress = state.courseProgress[course.id];
+    const enrolled = progress !== undefined;
+    const cta = enrolled
+        ? `<div style="flex:1;">
+                <div class="flex justify-between mb-2" style="font-size:13px;"><span class="subtext">Your progress</span><span style="font-weight:600;">${progress}%</span></div>
+                <div class="progress-track mb-3"><div class="progress-fill" style="width:${progress}%;"></div></div>
+                <button class="btn btn-secondary w-full" style="border-color:var(--blue-200);color:var(--blue-600);" ${progress>=100?'disabled':''} onclick="bumpCourse(${course.id},10)">${progress>=100?'Completed':'+10% progress'}</button>
+            </div>`
+        : `<button class="btn btn-primary" style="flex:1;" onclick="enrollCourse(${course.id})">Enroll · ${course.price}</button>`;
+
+    return `<div class="container">
+        <button class="btn-link mb-6" style="display:flex;align-items:center;gap:6px;color:var(--slate-500);" onclick="closeCourseDetail()">${ICON.back}Back</button>
+        <div class="grid-2" style="grid-template-columns:2fr 1fr;gap:32px;align-items:start;">
+            <div class="flex-col gap-4">
+                <div class="justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <div class="avatar ${course.tone}" style="width:56px;height:56px;font-size:20px;">${initials(course.name)}</div>
+                        <div><h1 class="title-lg">${esc(course.name)}</h1><p class="subtext mt-1">${esc(course.provider)} · Instructor ${esc(course.instructor)}</p></div>
+                    </div>
+                    <button class="icon-btn" style="border:1px solid ${bookmarked?'var(--blue-200)':'var(--slate-200)'};background:${bookmarked?'var(--blue-50)':'none'};color:${bookmarked?'var(--blue-600)':'var(--slate-500)'};" onclick="toggleBookmarkCourse(${course.id})">${bmk(bookmarked)}</button>
+                </div>
+
+                <div class="grid-3">
+                    <div class="info-row">${ICON.clock}<div><p class="subtext-sm">Duration</p><p style="font-size:14px;margin-top:2px;">${course.durationWeeks} weeks</p></div></div>
+                    <div class="info-row">${ICON.target}<div><p class="subtext-sm">Level</p><p style="font-size:14px;margin-top:2px;">${esc(course.level)}</p></div></div>
+                    <div class="info-row">${ICON.star}<div><p class="subtext-sm">Rating</p><p style="font-size:14px;margin-top:2px;">${course.rating} / 5</p></div></div>
+                </div>
+
+                <div class="card card-pad">
+                    <p class="subtext-sm mb-2">About this course</p>
+                    <p style="font-size:14px;line-height:1.6;">${esc(course.description)}</p>
+                </div>
+
+                <div class="card card-pad">
+                    <p class="title-md mb-3">What you'll learn</p>
+                    <ul class="bullet-list">${course.skillsGained.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>
+                </div>
+
+                <div class="flex gap-3">${cta}</div>
+            </div>
+
+            <div class="flex-col gap-5">
+                <div class="card card-pad">
+                    <p class="subtext-sm mb-3">Provider</p>
+                    <div class="flex items-center gap-3"><div class="avatar ${course.tone}" style="width:44px;height:44px;">${initials(course.provider)}</div><div><p class="title-md">${esc(course.provider)}</p><p class="subtext" style="font-size:12px;">${esc(course.instructor)}</p></div></div>
+                </div>
+                <div class="card card-pad">
+                    <p class="subtext-sm mb-3">Price</p>
+                    <p class="title-lg">${course.price}</p>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+/* ============ COURSE TAB ============ */
+function renderCourseTab(){
+    return `<div class="container">
+        <div class="mb-5"><h2 class="title-lg">Courses</h2><p class="subtext mt-1">Recommended to help you land the role.</p></div>
+        ${filterBarHtml(state.courseTabFilters,'course','courseTab')}
+        <div id="courseTabGrid">${renderCourseGrid(state.courseTabFilters)}</div>
+    </div>`;
+}
+function renderCourseGrid(f){
+    const results = filterCourses(f);
+    if(results.length===0) return emptyStateHtml(ICON.grad,'No courses match your filters','Try a different search.');
+    return '<div class="grid-3">' + results.map(c=>courseCardHtml(c)).join('') + '</div>';
+}
+function toggleBookmarkCourse(id){
+    const course = courseById(id);
+    if(state.bookmarkedCourses.has(id)){ state.bookmarkedCourses.delete(id); }
+    else { state.bookmarkedCourses.add(id); notify(`Saved ${course.name}`); }
+    render();
+}
+function enrollCourse(id){
+    if(state.courseProgress[id] !== undefined) return;
+    const course = courseById(id);
+    state.courseProgress[id] = 0;
+    notify(`Enrolled in ${course.name}`);
+    render();
+}
+function bumpCourse(id, delta){
+    const current = state.courseProgress[id] || 0;
+    const next = Math.min(100, current+delta);
+    state.courseProgress[id] = next;
+    if(next===100 && current!==100){ const c = courseById(id); notify(`Completed ${c.name} 🎉`); }
+    render();
+}
+
+/* ============ SEARCH TAB ============ */
+function renderSearchTab(){
+    const isJob = state.searchMode==='job';
+    return `<div class="container">
+        <div class="mb-5"><h2 class="title-lg">Search</h2><p class="subtext mt-1">Find jobs or courses in one place.</p></div>
+        <div class="segmented" style="max-width:320px;">
+            <button class="${isJob?'active':''}" onclick="setSearchMode('job')">Jobs</button>
+            <button class="${!isJob?'active':''}" onclick="setSearchMode('course')">Courses</button>
+        </div>
+        ${isJob ? filterBarHtml(state.searchJobFilters,'job','searchJob') : filterBarHtml(state.searchCourseFilters,'course','searchCourse')}
+        <div id="searchGrid">${isJob ? renderJobGrid(state.searchJobFilters) : renderCourseGrid(state.searchCourseFilters)}</div>
+    </div>`;
+}
+function setSearchMode(m){ state.searchMode=m; render(); }
+
+/* ============ SAVED / TRACKER ============ */
+function renderSavedTab(){
+    const savedJobs = JOBS.filter(j=>state.bookmarkedJobs.has(j.id));
+    const savedCourses = COURSES.filter(c=>state.bookmarkedCourses.has(c.id));
+    const appliedIds = Object.keys(state.appliedJobs);
+    const enrolledIds = Object.keys(state.courseProgress);
+    const sub = state.savedSub;
+
+    let body = '';
+    if(sub==='jobs'){
+        body = savedJobs.length===0
+            ? emptyStateHtml(ICON.bookmark.replace('{FILL}','none'),'No saved jobs yet','Bookmark jobs from the Job or Search tab.')
+            : '<div class="grid-2">' + savedJobs.map(j=>jobCardHtml(j)).join('') + '</div>';
+    } else if(sub==='courses'){
+        body = savedCourses.length===0
+            ? emptyStateHtml(ICON.bookmark.replace('{FILL}','none'),'No saved courses yet','Bookmark courses from the Course or Search tab.')
+            : '<div class="grid-3">' + savedCourses.map(c=>courseCardHtml(c)).join('') + '</div>';
+    } else {
+        body = `<div class="grid-2">
+            <div>
+                <p class="title-md flex items-center gap-2 mb-3">${ICON.trend}Job applications</p>
+                ${appliedIds.length===0 ? emptyStateHtml(ICON.briefcase,'No applications yet','Apply to a job to track its status here.') :
+                    appliedIds.map(id=>{
+                        const job = jobById(id);
+                        if(!job) return '';
+                        return `<div class="card card-pad flex items-center gap-3 mb-3">
+                            <div class="avatar ${job.tone}" style="width:40px;height:40px;">${initials(job.company)}</div>
+                            <div style="min-width:0;flex:1;"><p class="title-md truncate">${esc(job.title)}</p><p class="subtext truncate" style="font-size:12px;">${esc(job.company)}</p></div>
+                            <select class="field-input" style="width:auto;padding:6px 8px;font-size:12px;font-weight:600;" onchange="updateJobStatus(${job.id}, this.value)">
+                                ${STATUS_OPTIONS.map(s=>`<option value="${s}" ${s===state.appliedJobs[id]?'selected':''}>${s}</option>`).join('')}
+                            </select>
+                        </div>`;
+                    }).join('')
+                }
+            </div>
+            <div>
+                <p class="title-md flex items-center gap-2 mb-3">${ICON.grad}Course completion</p>
+                ${enrolledIds.length===0 ? emptyStateHtml(ICON.grad,'No courses in progress','Enroll in a course to track completion here.') :
+                    enrolledIds.map(id=>{
+                        const course = courseById(id);
+                        if(!course) return '';
+                        const progress = state.courseProgress[id];
+                        return `<div class="card card-pad mb-3">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="avatar ${course.tone}" style="width:40px;height:40px;">${initials(course.name)}</div>
+                                <div style="min-width:0;flex:1;"><p class="title-md truncate">${esc(course.name)}</p><p class="subtext truncate" style="font-size:12px;">${esc(course.provider)}</p></div>
+                                <span style="font-weight:600;">${progress}%</span>
+                            </div>
+                            <div class="progress-track"><div class="progress-fill" style="width:${progress}%;"></div></div>
+                            <button class="btn-sm btn-secondary w-full mt-3" style="border-color:var(--blue-200);color:var(--blue-600);" ${progress>=100?'disabled':''} onclick="bumpCourse(${course.id},10)">${progress>=100?'Completed':'+10% progress'}</button>
+                        </div>`;
+                    }).join('')
+                }
+            </div>
+        </div>`;
+    }
+
+    return `<div class="container">
+        <div class="mb-5"><h2 class="title-lg">Saved & Tracker</h2><p class="subtext mt-1">Everything you've bookmarked, applied to, or started.</p></div>
+        <div class="subtab-row">
+            <button class="subtab ${sub==='jobs'?'active':''}" onclick="setSavedSub('jobs')">Saved Jobs (${savedJobs.length})</button>
+            <button class="subtab ${sub==='courses'?'active':''}" onclick="setSavedSub('courses')">Saved Courses (${savedCourses.length})</button>
+            <button class="subtab ${sub==='tracker'?'active':''}" onclick="setSavedSub('tracker')">Tracker</button>
+        </div>
+        ${body}
+    </div>`;
+}
+function setSavedSub(s){ state.savedSub=s; render(); }
+
+/* ============ PROFILE TAB ============ */
+function renderProfileTab(){
+    const editing = state.profileEditing;
+    return `<div class="container" style="max-width:768px;">
+        <button class="btn-link mb-6" style="display:flex;align-items:center;gap:6px;color:var(--slate-500);" onclick="closeProfile()">${ICON.back}Back</button>
+        <div class="justify-between items-center mb-7">
+            <div class="flex items-center gap-4">
+                <div class="avatar blue" style="width:56px;height:56px;font-size:20px;">${initials(state.details.fullName||'You')}</div>
+                <div><h1 class="title-lg">${esc(state.details.fullName || 'Your profile')}</h1><p class="subtext">${esc(state.details.qualification || 'Add your qualification')}</p></div>
+            </div>
+            <button class="btn-sm" style="display:flex;align-items:center;gap:6px;border:1px solid ${editing?'var(--blue-600)':'var(--slate-200)'};background:${editing?'var(--blue-50)':'none'};color:${editing?'var(--blue-600)':'var(--slate-700)'};padding:8px 16px;" onclick="toggleProfileEdit()">
+                ${editing?ICON.save:ICON.pencil}${editing?'Done editing':'Edit profile'}
+            </button>
+        </div>
+
+        <div class="grid-2 mb-6">
+            <div class="card card-pad-lg flex-col gap-4">
+                <p class="title-md">Personal details</p>
+                ${profileField('Full Name','p_fullName',state.details.fullName,editing)}
+                ${profileField('Phone Number','p_phone',state.details.phone,editing)}
+                ${profileField('Email','p_email',state.details.email,editing)}
+                ${profileField('LinkedIn','p_linkedin',state.details.linkedin,editing)}
+                ${profileField('Address','p_address',state.details.address,editing)}
+            </div>
+            <div class="card card-pad-lg flex-col gap-4">
+                <p class="title-md">Qualification</p>
+                ${profileField('SSC Marks','p_sscMarks',state.details.sscMarks,editing)}
+                ${profileField('HSC Marks','p_hscMarks',state.details.hscMarks,editing)}
+                ${profileField('Degree','p_degree',state.details.degree,editing)}
+                ${profileField('Qualification','p_qualification',state.details.qualification,editing)}
+                ${profileField('Specification','p_specialization',state.details.specialization,editing)}
+            </div>
+        </div>
+
+        <div class="card card-pad-lg mb-6">
+            <p class="title-md mb-1">Skills</p>
+            <p class="subtext-sm mb-3">Add skills so we can show a match score on jobs that need them.</p>
+            <div class="flex gap-2 mb-3" style="flex-wrap:wrap;">
+                ${state.skills.length===0 ? '<p class="subtext-sm">No skills added yet.</p>' :
+                    state.skills.map(s=>`<span class="chip">${esc(s)}${editing?`<button onclick="removeSkill('${esc(s).replace(/'/g,"\\'")}')">${ICON.x}</button>`:''}</span>`).join('')}
+            </div>
+            ${editing ? `
+                <div class="flex gap-2">
+                    <input class="field-input" id="skillInput" placeholder="e.g. React, SQL, Figma" />
+                    <button class="btn-sm btn-primary" style="display:flex;align-items:center;gap:4px;padding:0 14px;" onclick="addSkillFromInput()">${ICON.plus}Add</button>
+                </div>` : ''}
+        </div>
+
+        <div class="card card-pad-lg">
+            <p class="title-md mb-1">Resume</p>
+            <p class="subtext-sm mb-3">Upload your resume so recruiters can review it.</p>
+            ${renderResumeSection()}
+            <input type="file" id="resumeInput" accept=".pdf,image/*" class="hidden" />
+        </div>
+    </div>`;
+}
+function profileField(label,id,value,editing){
+    return `<label class="field"><span class="field-label">${label}</span><input class="field-input" data-bind="${id}" value="${esc(value)}" ${editing?'':'disabled'} /></label>`;
+}
+function renderResumeSection(){
+    if(state.resume){
+        const r = state.resume;
+        const isImg = r.type.startsWith('image/');
+        const isPdf = r.type==='application/pdf';
+        let preview = `<p class="subtext-sm">Preview isn't available for this file type.</p>`;
+        if(isImg) preview = `<img src="${r.url}" style="width:100%;max-height:280px;object-fit:contain;border-radius:10px;border:1px solid var(--slate-200);" />`;
+        else if(isPdf) preview = `<embed src="${r.url}" type="application/pdf" style="width:100%;height:280px;border-radius:10px;border:1px solid var(--slate-200);" />`;
+        return `
+            <div class="flex items-center gap-3 card card-pad mb-3">
+                ${isImg?ICON.image:ICON.file}
+                <div style="min-width:0;flex:1;"><p style="font-size:14px;font-weight:500;" class="truncate">${esc(r.name)}</p><p class="subtext-sm">${Math.round(r.size/1024)} KB</p></div>
+                <button class="btn-link" style="color:var(--rose-500);" onclick="removeResume()">Remove</button>
+            </div>
+            ${preview}
+        `;
+    }
+    return `<button class="upload-box" onclick="document.getElementById('resumeInput').click()">${ICON.upload}<span style="font-size:14px;font-weight:500;">Click to upload your resume</span><span class="subtext-sm">PDF or image, up to a few MB</span></button>`;
+}
+
+function closeProfile(){ state.profileOpen=false; render(); }
+function toggleProfileEdit(){ state.profileEditing = !state.profileEditing; render(); }
+function addSkillFromInput(){
+    const input = document.getElementById('skillInput');
+    if(!input) return;
+    const val = input.value.trim();
+    if(!val) return;
+    if(!state.skills.some(s=>s.toLowerCase()===val.toLowerCase())) state.skills.push(val);
+    render();
+}
+function removeSkill(skill){ state.skills = state.skills.filter(s=>s!==skill); render(); }
+function removeResume(){ if(state.resume) URL.revokeObjectURL(state.resume.url); state.resume=null; render(); }
+
+function attachProfileEvents(){
+    document.querySelectorAll('[data-bind^="p_"]').forEach(el=>{
+        el.addEventListener('input', e=>{
+            const key = el.getAttribute('data-bind').replace('p_','');
+            state.details[key] = e.target.value;
+        });
+    });
+    const skillInput = document.getElementById('skillInput');
+    if(skillInput) skillInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addSkillFromInput(); } });
+    const resumeInput = document.getElementById('resumeInput');
+    if(resumeInput) resumeInput.addEventListener('change', e=>{
+        const file = e.target.files && e.target.files[0];
+        if(!file) return;
+        if(state.resume) URL.revokeObjectURL(state.resume.url);
+        const url = URL.createObjectURL(file);
+        state.resume = {name:file.name, size:file.size, type:file.type, url};
+        notify('Resume uploaded');
+        render();
+    });
+}
+
+/* ============ INIT ============ */
+render();
+</script>
+</body>
+</html>
